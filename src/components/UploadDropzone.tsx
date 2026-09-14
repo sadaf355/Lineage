@@ -1,0 +1,9 @@
+import { useRef, useState } from "react";
+import { UploadCloud, Loader2, RotateCcw, CheckCircle2 } from "lucide-react";
+import { useUpload } from "../context/UploadContext";
+export default function UploadDropzone(){
+ const {result,isAnalyzing,error,upload,reset}=useUpload(); const [over,setOver]=useState(false); const ref=useRef<HTMLInputElement>(null);
+ const choose=(files:FileList|null)=>files?.[0]&&upload(files[0]);
+ if(result) return <div className="rounded-2xl bg-soft border border-[#CFDACD] p-4 flex items-center justify-between"><div className="flex items-center gap-3"><div className="h-9 w-9 rounded-full bg-white flex items-center justify-center text-brand"><CheckCircle2 size={18}/></div><div><p className="text-[12.5px] font-semibold">{result.fileName}</p><p className="text-[10.5px] text-muted">Analysis computed locally in your browser</p></div></div><button onClick={reset} className="text-[11px] text-muted hover:text-brand"><RotateCcw size={13} className="inline mr-1"/>Reset</button></div>;
+ return <div><div onDragOver={e=>{e.preventDefault();setOver(true)}} onDragLeave={()=>setOver(false)} onDrop={e=>{e.preventDefault();setOver(false);choose(e.dataTransfer.files)}} onClick={()=>!isAnalyzing&&ref.current?.click()} className={`rounded-2xl border border-dashed p-5 text-center cursor-pointer transition ${over?"border-brand bg-soft":"border-[#BAC4BB] bg-[#FAFBF9] hover:bg-soft/40"}`}><input ref={ref} type="file" accept="image/*,video/*,audio/*" className="hidden" onChange={e=>choose(e.target.files)}/>{isAnalyzing?<><Loader2 className="mx-auto text-brand animate-spin"/><p className="text-[12px] font-medium mt-2">Analyzing media…</p></>:<><UploadCloud className="mx-auto text-brand" size={22}/><p className="text-[12px] font-semibold mt-2">Drop a file to analyze</p><p className="text-[10.5px] text-muted mt-1">Images, videos and audio · Max 500 MB</p></>}</div>{error&&<p className="text-[11px] text-[#8A4138] mt-2">{error}</p>}</div>
+}
