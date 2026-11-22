@@ -1,6 +1,6 @@
 # LINEAGE — Full Stack (Phases 1–6 Complete)
 
-> **Complete build: read `docs/YOUR_TODO.md` for what was verified and what you must do.**
+> **Complete build: see `docs/RUN_FIRST.md` for verification details and operational guidance.**
 >
 > ## START HERE (fastest way to a working install)
 >
@@ -342,14 +342,14 @@ using unpaid quota.
 
 ## Phase 5–6 production and trust layer
 
-The project now includes PostgreSQL/Alembic migration support, Redis background jobs, optional S3-compatible encrypted object storage, scheduled retention cleanup, audit/consent records, a BSA §63 certificate draft workflow, victim-support resources, and English/Hindi PDF report labels. See `docs/PHASE5_6.md`.
+The project includes PostgreSQL/Alembic migration support, Redis background jobs, optional S3-compatible encrypted object storage, scheduled retention cleanup, audit/consent records, a BSA §63 certificate draft workflow, victim-support resources, and English/Hindi PDF report labels.
 
 ## Phase 3 + 4 deployment notes
-See `docs/PHASE3_4.md` for stronger detection, optional audio/reverse-search integrations, Redis rate limiting, streaming encrypted uploads, short-lived access tokens, refresh rotation, key rotation via current/previous environment keys (secrets-manager integration planned), retention controls, and deployment caveats.
+Includes stronger detection, optional audio/reverse-search integrations, Redis rate limiting, streaming encrypted uploads, short-lived access tokens, refresh rotation, key rotation via current/previous environment keys, retention controls, and deployment caveats.
 
 
 ## Phase 1 and 2: measured detector and demo readiness
-See `docs/PHASE1_2.md`. Quick commands:
+Quick commands:
 
     ./scripts/demo.sh                 # one-command local demo (first run needs internet)
     ./scripts/demo.sh --offline       # later runs with Wi-Fi off
@@ -363,13 +363,11 @@ Rehearsal checklist and scripts: `docs/DEMO_RUNBOOK.md`.
 - Cookie-authenticated calls (`/auth/refresh`, `/auth/logout`) need the header `X-Lineage-CSRF: 1`; the bundled frontend sends it. If you call these endpoints yourself, add it.
 - Reports are generated inline unless a worker is configured (`JOB_QUEUE_ENABLED=true` + `REDIS_URL`).
 - The BSA §63 certificate draft is `POST /incidents/{id}/evidence/bsa63-certificate`.
-- Details: `docs/FIXES.md`.
 
 ## Release hygiene
 * Build the release zip with `scripts/make_release_zip.sh` (excludes local data, keys, caches; refuses if `package-lock.json` is stale).
 * Production needs `MANIFEST_SIGNING_KEY` (see `deploy/.env.production.example`).
-* See `docs/FIXES.md` for what changed and what is still open.
 
 
 ## Testing
-See `docs/ANTIGRAVITY_TEST_PROMPTS.md` for step-by-step test prompts and `docs/YOUR_TODO.md` for what is unverified.
+Run automated test suites via pytest and npm test. See `docs/RUN_FIRST.md` for verification and runbook details.

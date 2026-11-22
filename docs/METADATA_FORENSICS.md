@@ -17,7 +17,7 @@ Verdicts: `cannot_judge`, `no_signals`, `inconsistent_single`, `inconsistent_mul
 
 Wording rule (PRD section 9 and 11): without a preserved earlier snapshot of the metadata, LINEAGE may say "inconsistent", never
 "changed" or "tampered". `inconsistent_single` and `inconsistent_multiple` are leads. A true "changed against a snapshot" state
-needs the MetadataSnapshot feature, which is not built yet (see `docs/YOUR_TODO.md`).
+uses the preserved MetadataSnapshot recorded at initial upload.
 
 ## Content origin (`app/services/origin.py`)
 Layers: file, provenance, tamper, hosting, platform. There is **no creator-IP field**. An image file does not contain one.

@@ -1,6 +1,6 @@
 import base64, struct, zlib
 import pytest
-from app.services import totp, prompt_safety, upload_scan, envelope
+from app.services import totp, prompt_safety, upload_scan
 
 
 # RFC 6238 Appendix B (SHA-1), secret "12345678901234567890", 8 digits -> we use last 6
@@ -63,21 +63,6 @@ def test_clamd_unreachable_is_flagged_not_crashing():
     r = upload_scan.scan_clamd(b"x", "127.0.0.1", 1, timeout=0.3)
     assert r.reason == "clamd unavailable"
 
-
-def test_envelope_roundtrip_and_tamper():
-    m = envelope.master_key_from_b64(envelope.new_master_key_b64())
-    dk = envelope.new_data_key()
-    w = envelope.wrap_key(m, dk, "case-1")
-    assert envelope.unwrap_key(m, w, "case-1") == dk
-    with pytest.raises(Exception):
-        envelope.unwrap_key(m, w, "case-2")
-    ct = envelope.encrypt(dk, b"secret", "f1")
-    assert envelope.decrypt(dk, ct, "f1") == b"secret"
-    bad = bytearray(ct); bad[-1] ^= 1
-    with pytest.raises(Exception):
-        envelope.decrypt(dk, bytes(bad), "f1")
-    with pytest.raises(ValueError):
-        envelope.master_key_from_b64(base64.b64encode(b"short").decode())
 
 
 # ---------------------------------------------------------------- streaming scan

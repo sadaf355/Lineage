@@ -8,6 +8,7 @@ __pycache__/
 .env.*
 !.env.example
 backend/data/*
+!backend/data/.gitkeep
 !backend/data/demo/
 backend/data/demo/*
 !backend/data/demo/riya-demo.ppm
@@ -15,3 +16,11 @@ backend/data/demo/*
 *.tsbuildinfo
 .pytest_cache/
 rehearsal_log.csv
+*.log
+*.tmp
+scratch.db
+test_*.jpg
+test_*.png
+frontend/debug.log
+frontend/playwright-output.txt
+frontend/test-results/
