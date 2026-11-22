@@ -3,15 +3,15 @@
 #   pip install -r requirements.txt -r requirements-ml.txt
 #
 # Pins are deliberate (a from-scratch install was tested once in an isolated venv and failed twice before these):
-#  * facenet-pytorch 2.6.0 needs numpy<2 and Pillow>=10.2,<10.3
-#  * opencv-python-headless 4.9.0.80 is the newest release on the numpy<2 side
+#  * facenet-pytorch 2.6.0 needs numpy<3 and Pillow>=10.2,<10.3
+#  * opencv-python-headless 4.9.0.80 is the newest release on the numpy<3 side
 #  * transformers 4.46.3 is the newest release that works with torch 2.2.x
 # CPU-only torch avoids ~2.5 GB of unused CUDA libraries. For a GPU, drop the extra-index line and the "+cpu" suffixes.
 --extra-index-url https://download.pytorch.org/whl/cpu
-numpy<2
+numpy<3
 Pillow==10.2.0
-opencv-python-headless==4.9.0.80
+opencv-python-headless==5.1.0.95
 torch==2.2.2+cpu
 torchvision==0.17.2+cpu
 facenet-pytorch==2.6.0
-transformers==4.46.3
+transformers==5.23.0
