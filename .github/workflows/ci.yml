@@ -31,7 +31,7 @@ jobs:
       - run: pip install pip-audit==2.10.1
       # Fails on any advisory except the reviewed, dated ML-stack exceptions listed in scripts/audit_python.py.
       - run: python scripts/audit_python.py
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: '20'
       # Runtime (shipped) dependencies only. Dev-server/build tooling advisories are tracked by Dependabot.
@@ -45,7 +45,7 @@ jobs:
         working-directory: frontend
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: '20'
           cache: npm
