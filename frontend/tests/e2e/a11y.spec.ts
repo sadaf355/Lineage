@@ -64,6 +64,8 @@ test("axe: source graph with a focused node (dimming + detail panel)", async ({ 
 test("axe: command palette open", async ({ page }) => {
   await mockApi(page);
   await page.goto("/dashboard");
+  await page.waitForLoadState("networkidle");
+  await expect(page.getByRole("navigation").first()).toBeVisible();
   await page.keyboard.press("Control+k");
   const dialog = page.getByRole("dialog", { name: "Command palette" });
   await expect(dialog).toBeVisible();

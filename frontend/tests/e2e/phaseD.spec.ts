@@ -4,6 +4,8 @@ import { INCIDENT_ID, mockApi } from "./fixtures";
 test("Ctrl+K opens a real investigation from the palette", async ({ page }) => {
   await mockApi(page);
   await page.goto("/dashboard");
+  await page.waitForLoadState("networkidle");
+  await expect(page.getByRole("navigation").first()).toBeVisible();
   await page.keyboard.press("Control+k");
   await page.getByRole("combobox").fill("fabricated");
   await expect(page.getByRole("option").first()).toContainText("Test case");
