@@ -1,0 +1,158 @@
+# Production template: HTTPS via Caddy, Postgres, Redis, API, static frontend.
+# Only Caddy publishes ports (80/443). Database and Redis stay on the internal network.
+# Usage (from the repo root):
+#   cp deploy/.env.production.example deploy/.env   # then fill in every value
+#   docker compose --env-file deploy/.env -f deploy/docker-compose.prod.yml up -d --build
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: lineage
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+      POSTGRES_DB: lineage
+    volumes:
+      - lineage_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lineage"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # Antivirus for uploads. Needs about 1.5 GB of RAM for the signature database and a few minutes to start the first time.
+  # Pin the image by digest once you have tested it. Nothing publishes this port: only the api container can reach it.
+  clamav:
+    image: clamav/clamav:stable
+    restart: unless-stopped
+    volumes:
+      - clamav_db:/var/lib/clamav
+      - ./clamd.conf:/etc/clamav/clamd.conf:ro
+    healthcheck:
+      test: ["CMD-SHELL", "clamdcheck.sh"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 6m
+
+  api:
+    build: ../backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      clamav:
+        condition: service_healthy
+    environment:
+      ENV: production
+      # Uploads are refused (HTTP 422) when the scanner finds something and (HTTP 503) when it cannot be reached.
+      MALWARE_SCAN_MODE: enforce
+      CLAMD_HOST: clamav
+      CLAMD_PORT: "3310"
+      MAX_IMAGE_PIXELS: "100000000"
+      MAX_VIDEO_FRAMES: ${MAX_VIDEO_FRAMES:-1200}
+      MAX_VIDEO_DURATION_SECONDS: ${MAX_VIDEO_DURATION_SECONDS:-600}
+      MAX_DECOMPRESSION_RATIO: ${MAX_DECOMPRESSION_RATIO:-250}
+      DECOMPRESSION_RATIO_MIN_PIXELS: ${DECOMPRESSION_RATIO_MIN_PIXELS:-20000000}
+      UPLOAD_PROBE_TIMEOUT_SECONDS: ${UPLOAD_PROBE_TIMEOUT_SECONDS:-20}
+      ADMIN_EMAILS: ${ADMIN_EMAILS:-}
+      MFA_REQUIRED: ${MFA_REQUIRED:-true}
+      MFA_ENCRYPTION_KEY: ${MFA_ENCRYPTION_KEY:?Set MFA_ENCRYPTION_KEY (see deploy/.env.production.example)}
+      DEBUG: "false"
+      DATABASE_URL: postgresql+psycopg2://lineage:${POSTGRES_PASSWORD}@db:5432/lineage
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:?Set JWT_SECRET_KEY}
+      FILE_ENCRYPTION_KEY: ${FILE_ENCRYPTION_KEY:?Set FILE_ENCRYPTION_KEY}
+      ACCESS_TOKEN_EXPIRE_MINUTES: "15"
+      REFRESH_TOKEN_EXPIRE_DAYS: "7"
+      AUTH_COOKIE_SECURE: "true"
+      CORS_ORIGINS: https://app.${DOMAIN:?Set DOMAIN}
+      DATA_DIR: /app/data
+      UPLOADS_DIR: /app/data/uploads
+      MAX_UPLOAD_MB: "500"
+      REDIS_URL: redis://redis:6379/0
+      # Keep downloaded ML models on the persistent volume so rebuilds do not re-download them.
+      HF_HOME: /app/data/hf
+      NEO4J_URI: ""
+      DETECTOR_SECOND_MODEL_ID: ${DETECTOR_SECOND_MODEL_ID:-}
+      TORCH_HOME: /app/data/torch
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      REQUIRE_REVIEW_FOR_SENSITIVE_ACTIONS: "true"
+      DATA_RETENTION_DAYS: "30"
+      STORAGE_BACKEND: ${STORAGE_BACKEND:-local}
+      S3_BUCKET: ${S3_BUCKET:-}
+      S3_REGION: ${S3_REGION:-}
+      S3_ENDPOINT_URL: ${S3_ENDPOINT_URL:-}
+      S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:-}
+      S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY:-}
+      JOB_QUEUE_ENABLED: "true"
+      REQUIRE_DATABASE_MIGRATIONS: "true"
+      # Signs evidence manifests. Required in production; generate once and keep it in your secret manager.
+      MANIFEST_SIGNING_KEY: ${MANIFEST_SIGNING_KEY:?Set MANIFEST_SIGNING_KEY}
+      LEGAL_REVIEW_STATUS: ${LEGAL_REVIEW_STATUS:-pending}
+    volumes:
+      # Encrypted uploads. Back this volume up together with FILE_ENCRYPTION_KEY.
+      - lineage_data:/app/data
+
+  worker:
+    build: ../backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: ["python", "-m", "app.worker"]
+    environment:
+      ENV: production
+      DATABASE_URL: postgresql+psycopg2://lineage:${POSTGRES_PASSWORD}@db:5432/lineage
+      FILE_ENCRYPTION_KEY: ${FILE_ENCRYPTION_KEY:?Set FILE_ENCRYPTION_KEY}
+      REDIS_URL: redis://redis:6379/0
+      STORAGE_BACKEND: ${STORAGE_BACKEND:-local}
+      S3_BUCKET: ${S3_BUCKET:-}
+      S3_REGION: ${S3_REGION:-}
+      S3_ENDPOINT_URL: ${S3_ENDPOINT_URL:-}
+      S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:-}
+      S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY:-}
+      REQUIRE_DATABASE_MIGRATIONS: "true"
+      CAPTURE_SWEEP_ENABLED: "true"
+    volumes:
+      - lineage_data:/app/data
+
+  web:
+    build:
+      context: ../frontend
+      args:
+        VITE_API_URL: https://api.${DOMAIN:?Set DOMAIN}
+    restart: unless-stopped
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on: [api, web]
+    environment:
+      DOMAIN: ${DOMAIN}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  lineage_pg_data:
+  lineage_data:
+  clamav_db:
+  caddy_data:
+  caddy_config:

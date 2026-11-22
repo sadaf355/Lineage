@@ -1,0 +1,36 @@
+# CORE install: everything the API, evidence, tracing, reports and tests need.
+# Works on Python 3.11 - 3.13. The heavy ML stack is OPTIONAL and lives in requirements-ml.txt.
+# Without it the app still runs: detection uses the labelled pixel-heuristic fallback and
+# fingerprints report "no face". Install the ML extras with:  pip install -r requirements-ml.txt
+fastapi==0.141.1
+uvicorn[standard]==0.53.0
+sqlalchemy==2.0.53
+pydantic==2.13.5
+pydantic-settings==2.15.0
+email-validator==2.3.0
+python-jose[cryptography]==3.5.0
+bcrypt==5.0.0
+python-multipart==0.0.32
+cryptography==50.0.0
+python-dotenv==1.2.2
+psycopg2-binary>=2.9.10
+reportlab>=4.4.10
+anthropic==1.5.0
+google-genai>=2.25.0,<3.0.0
+neo4j==6.3.1  # optional at runtime; the graph falls back to in-memory
+
+# Image / video analysis (loose ranges so pip picks wheels for your Python version)
+numpy>=1.26
+Pillow>=10.2
+opencv-python-headless>=4.9
+
+alembic==1.18.4
+boto3==1.43.18
+beautifulsoup4==4.13.5
+requests==2.33.0
+pytest==9.0.3
+httpx==0.28.1
+redis==5.2.1
+playwright==1.51.0
+# Optional licensed reverse-image provider:
+# google-cloud-vision==3.10.2

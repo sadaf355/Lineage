@@ -1,0 +1,6 @@
+# Development / CI extras. Install with:  pip install -r requirements-dev.txt
+-r requirements.txt
+pytest-cov==7.1.0        # coverage gate in CI (see .github/workflows/ci.yml)
+pip-audit==2.10.1         # dependency vulnerability audit (scripts/audit_python.py)
+python-pptx==1.0.2       # eval/make_slide.py (detector results slide)
+PyYAML>=6.0
