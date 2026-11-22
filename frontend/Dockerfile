@@ -1,5 +1,5 @@
 # Build the static frontend, then serve it with nginx.
-FROM node:20-alpine AS build
+FROM node:26-alpine AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
 # npm install (not npm ci) until package-lock.json is regenerated once with the new devDependencies
