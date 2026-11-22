@@ -17,7 +17,7 @@ ACTIONS = (
     "location_added", "location_edited", "location_deleted", "direction_confirmed", "direction_revoked",
     "alert_draft_generated", "alert_draft_edited", "alert_draft_approved", "alert_draft_exported",
     "investigation_exported", "status_changed", "source_trace_requested", "source_trace_match_reviewed", "integrity_verified", "media_deleted", "incident_deleted", "evidence_certificate_generated",
-    "upload_rejected", "upload_unverified",
+    "upload_rejected", "upload_unverified", "upload_limits_unverified",
     # Previously written by endpoints but never registered here, which made those endpoints raise ValueError (HTTP 500).
     "reverse_search_requested", "retention_purge", "request_pack_generated", "evidence_deleted",
     # Phase E

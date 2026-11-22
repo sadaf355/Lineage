@@ -29,3 +29,10 @@ def test_unreadable_video_raises_video_probe_unavailable():
     cfg = SimpleNamespace(MAX_VIDEO_FRAMES=1000, MAX_VIDEO_DURATION_SECONDS=60, UPLOAD_PROBE_TIMEOUT_SECONDS=5)
     with pytest.raises(VideoProbeUnavailable):
         validate_video_limits("/definitely/not/a/video", 10, cfg)
+
+def test_limit_violations_use_the_dedicated_refusal_type_not_a_bare_valueerror():
+    from app.services.upload_limits import UploadLimitExceeded
+    cfg = SimpleNamespace(MAX_IMAGE_PIXELS=100, MAX_DECOMPRESSION_RATIO=0, DECOMPRESSION_RATIO_MIN_PIXELS=0)
+    with pytest.raises(UploadLimitExceeded):
+        validate_image_limits(1000, 1000, 10, cfg)
+    assert not issubclass(ValueError, UploadLimitExceeded)

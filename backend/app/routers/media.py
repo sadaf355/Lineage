@@ -30,6 +30,7 @@ from app.models.media import MetadataSnapshot
 from app.services.operations import record_operational_event
 from app.services import upload_guard
 from app.services.upload_sniff import safe_ext
+from app.services.upload_limits import UploadLimitExceeded
 
 router = APIRouter(prefix="/incidents", tags=["media"])
 settings = get_settings()
@@ -179,7 +180,7 @@ async def upload_media(
                     validate_video_limits(temp_path, size, settings)
                 except VideoProbeUnavailable as exc:
                     if settings.UPLOAD_SNIFF_STRICT_AV:
-                        raise
+                        raise UploadLimitExceeded(str(exc)) from exc
                     record_operational_event(db, "upload_unverified", "video_limits_unverified", current_user.id)
                     audit.record(db, incident.id, current_user, "upload_limits_unverified", target_type="media",
                                  details={"reason": str(exc), "note": "frame and duration limits could not be checked"}, commit=False)
@@ -189,7 +190,7 @@ async def upload_media(
             else:
                 width = height = None
                 gps = None
-    except ValueError as exc:
+    except UploadLimitExceeded as exc:
         record_operational_event(db, "upload_refusal", str(exc), current_user.id)
         audit.record(db, incident.id, current_user, "upload_rejected", target_type="media", details={"reason": str(exc)})
         try: file_storage.delete_encrypted(storage_path)
