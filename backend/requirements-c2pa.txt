@@ -5,4 +5,4 @@
 # The range is deliberate, not a verified pin: this build had no package-registry access, so the exact version was never installed.
 # After installing, run `pytest tests/test_provenance.py` and check one real signed image (see docs/YOUR_TODO.md) before relying on it.
 # If a newer release changes the Reader API, validation reports status "error" rather than a wrong answer; pin the version you tested.
-c2pa-python>=0.10,<1.0
+c2pa-python>=0.39.0,<1.0
