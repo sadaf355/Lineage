@@ -1,0 +1,31 @@
+version: 2
+updates:
+  - package-ecosystem: pip
+    directory: /backend
+    schedule: { interval: weekly }
+    open-pull-requests-limit: 5
+    groups:
+      # torch / transformers / Pillow / facenet-pytorch must move together (see backend/requirements.txt).
+      ml-stack:
+        patterns: ["torch*", "transformers", "pillow", "facenet-pytorch", "opencv-python-headless", "numpy"]
+    ignore:
+      # Held back on purpose: facenet-pytorch 2.6.0 pins these. Remove when that constraint is lifted.
+      - dependency-name: "torch"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
+      - dependency-name: "torchvision"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
+      - dependency-name: "pillow"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
+  - package-ecosystem: npm
+    directory: /frontend
+    schedule: { interval: weekly }
+    open-pull-requests-limit: 5
+  - package-ecosystem: github-actions
+    directory: /
+    schedule: { interval: monthly }
+  - package-ecosystem: docker
+    directory: /backend
+    schedule: { interval: monthly }
+  - package-ecosystem: docker
+    directory: /frontend
+    schedule: { interval: monthly }

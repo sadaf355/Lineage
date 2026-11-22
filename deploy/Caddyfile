@@ -1,0 +1,26 @@
+# Two hostnames under one domain keep the refresh cookie same-site.
+# DNS: point app.<DOMAIN> and api.<DOMAIN> at this server. Caddy issues HTTPS certificates automatically.
+(security) {
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "no-referrer"
+		Permissions-Policy "camera=(), microphone=(), geolocation=()"
+		-Server
+	}
+}
+
+app.{$DOMAIN} {
+	import security
+	header Content-Security-Policy "default-src 'self'; img-src 'self' data: blob:; media-src 'self' blob:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self' https://api.{$DOMAIN}; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+	reverse_proxy web:80
+}
+
+api.{$DOMAIN} {
+	import security
+	request_body {
+		max_size 520MB
+	}
+	reverse_proxy api:8000
+}

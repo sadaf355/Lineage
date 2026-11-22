@@ -1,0 +1,91 @@
+# Local demo stack: http only, everything on one machine. NOT for the public internet.
+# (Public deployment uses deploy/docker-compose.prod.yml with HTTPS.)
+#
+#   ./scripts/demo.sh            # generates secrets, builds, starts, seeds, opens the app
+#   ./scripts/demo.sh --offline  # same, but never touches the network (models must be prefetched)
+#
+# App: http://localhost:5173   API: http://localhost:8000
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: lineage
+      POSTGRES_PASSWORD: lineage-demo
+      POSTGRES_DB: lineage
+    volumes:
+      - demo_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lineage"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # Optional antivirus: start with  docker compose --profile scan ...  and set CLAMD_HOST=clamav in deploy/.env.demo.
+  # Without it the API still runs the built-in EICAR and image-size checks (MALWARE_SCAN_MODE=log below).
+  clamav:
+    image: clamav/clamav:stable
+    profiles: ["scan"]
+    restart: unless-stopped
+    volumes:
+      - demo_clamav_db:/var/lib/clamav
+      - ./deploy/clamd.conf:/etc/clamav/clamd.conf:ro
+
+  api:
+    build: ./backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      ENV: development
+      DEBUG: "false"
+      DATABASE_URL: postgresql+psycopg2://lineage:lineage-demo@db:5432/lineage
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:?Run scripts/demo.sh, which generates deploy/.env.demo}
+      FILE_ENCRYPTION_KEY: ${FILE_ENCRYPTION_KEY:?Run scripts/demo.sh, which generates deploy/.env.demo}
+      AUTH_COOKIE_SECURE: "false"
+      MALWARE_SCAN_MODE: ${MALWARE_SCAN_MODE:-log}
+      CLAMD_HOST: ${CLAMD_HOST:-}
+      CORS_ORIGINS: http://localhost:5173
+      DATA_DIR: /app/data
+      UPLOADS_DIR: /app/data/uploads
+      REDIS_URL: redis://redis:6379/0
+      # Model caches live on the persistent volume so they survive rebuilds and work offline.
+      HF_HOME: /app/data/hf
+      TORCH_HOME: /app/data/torch
+      OFFLINE_DEMO_MODE: ${OFFLINE_DEMO_MODE:-false}
+      DETECTOR_MODEL_ID: ${DETECTOR_MODEL_ID:-dima806/deepfake_vs_real_image_detection}
+      DETECTOR_SECOND_MODEL_ID: ${DETECTOR_SECOND_MODEL_ID:-}
+      NEO4J_URI: ""
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+    ports:
+      - "8000:8000"
+    volumes:
+      - demo_data:/app/data
+
+  web:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: http://localhost:8000
+    restart: unless-stopped
+    depends_on: [api]
+    ports:
+      - "5173:80"
+
+volumes:
+  demo_pg_data:
+  demo_data:
+  demo_clamav_db:

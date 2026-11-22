@@ -1,0 +1,111 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #182421;
+  background: #F7F7F3;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+* { box-sizing: border-box; }
+html, body, #root { min-height: 100%; margin: 0; }
+body { background: #F7F7F3; }
+button, input, textarea, select { font: inherit; }
+button { cursor: pointer; }
+::selection { background: #DDE8D9; color: #182421; }
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #C9D1CA; border-radius: 999px; }
+
+.font-display { font-family: Georgia, "Times New Roman", serif; }
+.theme-dark { color-scheme: dark; }
+.theme-dark body { background: #18201B; }
+
+
+/* Intentional dark theme: preserve the same hierarchy and calm palette. */
+.dark-ui { background:#18201B !important; color:#E9EEE8; }
+.dark-ui .bg-bg { background:#18201B !important; }
+.dark-ui .bg-card, .dark-ui .bg-white { background:#202A23 !important; }
+.dark-ui .text-ink { color:#E9EEE8 !important; }
+.dark-ui .text-muted { color:#AAB5AE !important; }
+.dark-ui .text-faint { color:#94A39A !important; }
+.dark-ui .text-brand { color:#7FBF8E !important; }
+.dark-ui .border-brand { border-color:#4E7A5A !important; }
+.dark-ui .border-border { border-color:#344238 !important; }
+.dark-ui input, .dark-ui textarea, .dark-ui select { background:#222D25 !important; color:#E9EEE8; border-color:#3A4A3D !important; }
+.dark-ui .bg-soft { background:#2B3A2E !important; }
+.dark-ui .bg-amber { background:#3D3418 !important; }
+.dark-ui .bg-blue { background:#1E2C38 !important; }
+.dark-ui .bg-red { background:#3A2420 !important; }
+/* Neutral near-white card tints used across screens (Overview, Dashboard tables, etc.) */
+.dark-ui .bg-\[\#FAFBF9\] { background:#202A23 !important; }
+.dark-ui .bg-\[\#F4F6F3\] { background:#253127 !important; }
+.dark-ui .bg-\[\#EEF1ED\] { background:#2B352E !important; }
+.dark-ui .bg-\[\#EEF0ED\] { background:#2B352E !important; }
+.dark-ui .bg-\[\#F0F3EF\] { background:#2B352E !important; }
+.dark-ui .bg-\[\#F7F8F6\] { background:#202A23 !important; }
+.dark-ui .bg-\[\#F8F9F6\] { background:#202A23 !important; }
+.dark-ui .bg-\[\#F8F1EC\] { background:#3A2E20 !important; }
+.dark-ui .bg-\[\#EEEAF8\] { background:#292040 !important; }
+.dark-ui .bg-\[\#DCE1DC\] { background:#2B352E !important; }
+/* Solid accent-colored chips (platform badges, node markers) — darken slightly for less glare, keep hue */
+.dark-ui .bg-\[\#6585A8\] { background:#4E6E8E !important; }
+.dark-ui .bg-\[\#6B5AA0\] { background:#584789 !important; }
+.dark-ui .bg-\[\#B96255\] { background:#A04E42 !important; }
+.dark-ui .bg-\[\#C79B42\] { background:#AD8433 !important; }
+.dark-ui .hover\:bg-\[\#FAFBF9\]:hover { background:#263228 !important; }
+
+/* ---- 3D propagation globe overlay labels ---- */
+.geo-label { position:absolute; left:0; top:0; white-space:nowrap; font-size:11px; line-height:1.2; color:#e6f3ee;
+  background:rgba(8,20,26,.72); border:1px solid rgba(120,220,190,.28); backdrop-filter:blur(6px);
+  padding:3px 8px; border-radius:999px; transition:opacity .2s; display:flex; gap:6px; align-items:center; will-change:transform; }
+.geo-label b { font-weight:600; }
+.geo-label span { color:#8fd9be; font-size:10px; }
+.geo-label.sel { border-color:#4fe3a1; box-shadow:0 0 0 1px rgba(79,227,161,.35), 0 0 18px rgba(79,227,161,.25); }
+.geo-range { -webkit-appearance:none; appearance:none; background:transparent; position:absolute; inset:0; width:100%; pointer-events:none; height:20px; margin:0; }
+.geo-range::-webkit-slider-thumb { -webkit-appearance:none; pointer-events:auto; height:16px; width:16px; border-radius:50%; background:#4fe3a1; border:2px solid #0b1a24; box-shadow:0 0 10px rgba(79,227,161,.7); cursor:grab; }
+.geo-range::-moz-range-thumb { pointer-events:auto; height:14px; width:14px; border-radius:50%; background:#4fe3a1; border:2px solid #0b1a24; cursor:grab; }
+.geo-range::-webkit-slider-runnable-track { background:transparent; }
+.geo-range::-moz-range-track { background:transparent; }
+
+
+:root {
+  --lineage-bg:#f5f7f3;
+  --lineage-card:rgba(255,255,255,.78);
+  --lineage-ink:#16231c;
+  --lineage-brand:#3d6648;
+  --lineage-brand-bright:#5fe0a0;
+  --lineage-border:rgba(47,73,55,.11);
+}
+html { scroll-behavior:smooth; }
+body { background:radial-gradient(circle at 15% 5%, rgba(104,172,126,.08), transparent 32%), var(--lineage-bg); }
+button,input,select,textarea { transition:box-shadow .2s ease, transform .2s ease, border-color .2s ease, background-color .2s ease; }
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible { outline:2px solid rgba(80,180,119,.55); outline-offset:2px; }
+.glass { background:var(--lineage-card); backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px); border:1px solid var(--lineage-border); box-shadow:0 20px 70px rgba(34,54,40,.08); }
+.hero-grid { background-image:linear-gradient(rgba(57,90,66,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(57,90,66,.055) 1px,transparent 1px); background-size:34px 34px; mask-image:linear-gradient(to bottom,black,transparent 88%); }
+.hero-orb { position:absolute; width:420px;height:420px;border-radius:50%; background:radial-gradient(circle,rgba(91,223,151,.20),rgba(91,223,151,0) 68%); filter:blur(4px); animation:orbFloat 8s ease-in-out infinite; }
+@keyframes orbFloat { 0%,100%{transform:translate3d(0,0,0) scale(1)} 50%{transform:translate3d(0,-16px,0) scale(1.04)} }
+.pulse-dot { animation:pulseDot 2s ease-in-out infinite; }
+@keyframes pulseDot { 0%,100%{box-shadow:0 0 0 0 rgba(95,224,160,.45)} 50%{box-shadow:0 0 0 7px rgba(95,224,160,0)} }
+.scan-line { animation:scanLine 2.8s ease-in-out infinite; }
+@keyframes scanLine { 0%{transform:translateY(-100%);opacity:0} 15%{opacity:1} 85%{opacity:1} 100%{transform:translateY(100%);opacity:0} }
+.forensic-scene { width:100%; height:100%; min-height:320px; }
+@media (prefers-reduced-motion: reduce) { *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;scroll-behavior:auto !important;transition-duration:.01ms !important;} }
+.dark-ui { background:#0d1511 !important; }
+.dark-ui body { background:#0d1511; }
+
+/* Phase D: horizontal "data is flowing" sweep used by the progress rail connector (real running state only). */
+.scan-line-x { animation:scanLineX 1.6s linear infinite; }
+@keyframes scanLineX { 0%{transform:translateX(-100%)} 100%{transform:translateX(300%)} }
+/* Detector scan sweep (vertical). Only rendered while the server reports detection is actually running. */
+.scan-sweep { animation:scanSweep 2.2s ease-in-out infinite; }
+@keyframes scanSweep { 0%{transform:translateY(-10%);opacity:0} 12%{opacity:1} 88%{opacity:1} 100%{transform:translateY(105%);opacity:0} }
+
+/* Phase D a11y: SVG graph nodes are keyboard-focusable; give them a visible focus ring. */
+.node-focus { outline:none; }
+.node-focus:focus-visible rect:first-of-type { stroke:#1F6FEB; stroke-width:3; }

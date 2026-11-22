@@ -1,0 +1,9 @@
+# Dataset images carry their own licences; do not commit or redistribute them.
+images/*
+!images/.gitkeep
+# Your real manifest is created by you; the example stays tracked.
+manifest.csv
+
+# Raw downloads you stage before build_manifest.py (licensed third-party data: never commit).
+incoming/
+# sources.csv (dataset URL + licence per source) IS committed: it is the licence record for the numbers.

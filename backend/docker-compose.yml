@@ -1,0 +1,95 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: lineage
+      POSTGRES_PASSWORD: lineage
+      POSTGRES_DB: lineage
+    ports:
+      - "5432:5432"
+    volumes:
+      - lineage_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lineage"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Phase 3A: graph persistence. Optional for the API — if Neo4j is down, the graph
+  # endpoints fall back to the in-memory KnowledgeGraph automatically.
+  neo4j:
+    image: neo4j:5-community
+    restart: unless-stopped
+    environment:
+      # Set NEO4J_PASSWORD in your shell or a root .env (min 8 chars). Dev default only.
+      NEO4J_AUTH: neo4j/${NEO4J_PASSWORD:-lineage-dev-password}
+      NEO4J_server_memory_heap_max__size: 1G
+      NEO4J_server_memory_pagecache_size: 512M
+    ports:
+      - "7474:7474"   # Neo4j Browser (HTTP)
+      - "7687:7687"   # Bolt
+    volumes:
+      - lineage_neo4j_data:/data
+      - lineage_neo4j_logs:/logs
+    healthcheck:
+      test: ["CMD-SHELL", "cypher-shell -u neo4j -p \"$${NEO4J_AUTH#neo4j/}\" 'RETURN 1' || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 12
+      start_period: 30s
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      neo4j:
+        condition: service_started
+      redis:
+        condition: service_healthy
+    environment:
+      ENV: production
+      DEBUG: "false"
+      DATABASE_URL: postgresql+psycopg2://lineage:lineage@db:5432/lineage
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:?Set JWT_SECRET_KEY before production deployment}
+      JWT_ALGORITHM: HS256
+      ACCESS_TOKEN_EXPIRE_MINUTES: "15"
+      REFRESH_TOKEN_EXPIRE_DAYS: "7"
+      DATA_DIR: /app/data
+      UPLOADS_DIR: /app/data/uploads
+      MAX_UPLOAD_MB: "500"
+      FILE_ENCRYPTION_KEY: ${FILE_ENCRYPTION_KEY:?Set FILE_ENCRYPTION_KEY before production deployment}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173}
+      NEO4J_URI: bolt://neo4j:7687
+      NEO4J_USER: neo4j
+      NEO4J_PASSWORD: ${NEO4J_PASSWORD:-lineage-dev-password}
+      NEO4J_DATABASE: neo4j
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      REDIS_URL: redis://redis:6379/0
+      REQUIRE_REVIEW_FOR_SENSITIVE_ACTIONS: "true"
+      DATA_RETENTION_DAYS: "30"
+    ports:
+      - "8000:8000"
+    volumes:
+      # Persist uploaded (encrypted) files and the auto-generated encryption
+      # key file outside the container so a rebuild doesn't orphan them.
+      - lineage_uploads:/app/data
+
+volumes:
+  lineage_pg_data:
+  lineage_uploads:
+  lineage_neo4j_data:
+  lineage_neo4j_logs:

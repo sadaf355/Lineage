@@ -1,0 +1,8 @@
+# OPTIONAL: Content Credentials (C2PA) signature validation. Install with:
+#   pip install -r requirements-c2pa.txt          (the Docker image does this unless built with --build-arg INSTALL_C2PA=false)
+# Without it LINEAGE still detects that credentials are present and reports validation as "not_validated"; it never reports "valid".
+#
+# The range is deliberate, not a verified pin: this build had no package-registry access, so the exact version was never installed.
+# After installing, run `pytest tests/test_provenance.py` and check one real signed image (see docs/YOUR_TODO.md) before relying on it.
+# If a newer release changes the Reader API, validation reports status "error" rather than a wrong answer; pin the version you tested.
+c2pa-python>=0.10,<1.0

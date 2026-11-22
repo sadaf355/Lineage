@@ -1,0 +1,17 @@
+# OPTIONAL ML extras (real deepfake classifier, face embedding, explainability heatmap).
+# Needs Python 3.12 (torch 2.2.2 has no wheels for 3.13). Install AFTER the core file, or together:
+#   pip install -r requirements.txt -r requirements-ml.txt
+#
+# Pins are deliberate (a from-scratch install was tested once in an isolated venv and failed twice before these):
+#  * facenet-pytorch 2.6.0 needs numpy<2 and Pillow>=10.2,<10.3
+#  * opencv-python-headless 4.9.0.80 is the newest release on the numpy<2 side
+#  * transformers 4.46.3 is the newest release that works with torch 2.2.x
+# CPU-only torch avoids ~2.5 GB of unused CUDA libraries. For a GPU, drop the extra-index line and the "+cpu" suffixes.
+--extra-index-url https://download.pytorch.org/whl/cpu
+numpy<2
+Pillow==10.2.0
+opencv-python-headless==4.9.0.80
+torch==2.2.2+cpu
+torchvision==0.17.2+cpu
+facenet-pytorch==2.6.0
+transformers==4.46.3

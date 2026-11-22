@@ -1,0 +1,3 @@
+filename,label,source,condition
+real_0001.jpg,real,example-dataset-name,original
+fake_0001.jpg,fake,example-dataset-name,original

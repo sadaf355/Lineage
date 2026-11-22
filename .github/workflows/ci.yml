@@ -1,0 +1,70 @@
+name: LINEAGE CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r requirements-dev.txt
+      - run: python -m compileall -q app eval prefetch_models.py
+      # Coverage gate: fail below 70% (measured 76% on the lightweight dependency set when this was added).
+      # Raise the number as coverage grows; never lower it to make a red build green.
+      - run: pytest -q --cov=app --cov-report=term-missing:skip-covered --cov-fail-under=70
+
+  dependency-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install pip-audit==2.10.1
+      # Fails on any advisory except the reviewed, dated ML-stack exceptions listed in scripts/audit_python.py.
+      - run: python scripts/audit_python.py
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      # Runtime (shipped) dependencies only. Dev-server/build tooling advisories are tracked by Dependabot.
+      - run: npm audit --omit=dev --audit-level=high --package-lock-only
+        working-directory: frontend
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm install --no-audit --no-fund
+      - run: npm run test
+      - run: npm run build
+      - run: npm run test:e2e
+
+  docker-config:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker compose -f backend/docker-compose.yml config
+        env:
+          JWT_SECRET_KEY: ci-placeholder
+          FILE_ENCRYPTION_KEY: ci-placeholder
+      - run: docker compose -f docker-compose.demo.yml config
+        env:
+          JWT_SECRET_KEY: ci-placeholder
+          FILE_ENCRYPTION_KEY: ci-placeholder
+      - run: bash -n scripts/demo.sh

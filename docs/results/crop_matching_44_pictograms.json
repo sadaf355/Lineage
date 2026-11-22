@@ -1,0 +1,61 @@
+{
+  "images_read": 44,
+  "images_usable": 40,
+  "thresholds": {
+    "min_inliers": 30,
+    "min_inlier_ratio": 0.35,
+    "min_area": 0.08
+  },
+  "recall": {
+    "crop 90%": {
+      "trials": 120,
+      "recall": 0.992,
+      "insufficient_features": 0
+    },
+    "crop 75%": {
+      "trials": 120,
+      "recall": 1.0,
+      "insufficient_features": 0
+    },
+    "crop 60%": {
+      "trials": 120,
+      "recall": 0.808,
+      "insufficient_features": 0
+    },
+    "crop 50%": {
+      "trials": 120,
+      "recall": 0.542,
+      "insufficient_features": 2
+    },
+    "crop 35%": {
+      "trials": 120,
+      "recall": 0.233,
+      "insufficient_features": 15
+    },
+    "resize 50%": {
+      "trials": 40,
+      "recall": 1.0,
+      "insufficient_features": 0
+    },
+    "rotate 8deg": {
+      "trials": 40,
+      "recall": 0.925,
+      "insufficient_features": 0
+    },
+    "mirror": {
+      "trials": 40,
+      "recall": 1.0,
+      "insufficient_features": 0
+    },
+    "jpeg q35": {
+      "trials": 40,
+      "recall": 1.0,
+      "insufficient_features": 0
+    }
+  },
+  "false_match": {
+    "different_image_pairs": 780,
+    "wrongly_matched": 34,
+    "rate": 0.0436
+  }
+}

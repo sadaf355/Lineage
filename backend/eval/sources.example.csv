@@ -1,0 +1,3 @@
+source,url,licence,fake_kind
+example-real-faces,https://example.org/dataset-page,CC-BY-4.0 (check the page),
+example-swapped-faces,https://example.org/other-dataset,research-only (check the page),face swap
